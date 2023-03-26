@@ -1,0 +1,22 @@
+---
+- name: Change Samba Share Fcontext
+  hosts: 10.0.2.11
+  become: true
+  tasks:
+  - name: Download PythonCoreUtils
+    package:
+      name: policycoreutils-python
+      state: present
+    
+  - name: Set SELinux Fcontext for Samba Share
+    sefcontext:
+      target: "/data/fontos(/.*)?"
+      setype: "samba_share_t"
+      state: present
+      
+  - name: Open Samba Ports
+    firewalld:
+      port: 445/tcp
+      permanent: true
+      state: enabled
+      immediate: true
