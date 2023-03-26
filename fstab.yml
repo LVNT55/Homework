@@ -6,6 +6,10 @@
   vars:
     mount_point: "/mnt/drive"
     device_uuid: ""
+    directory_path: "/data/mydir"
+    directory_owner: "myuser"
+    directory_group: "mygroup"
+    directory_mode: "0770"
     
     tasks:
     - name: Create mount point
@@ -21,3 +25,6 @@
     mount:
       path: "{{ mount_point }}"
       state: mounted
+      
+    roles:
+      - createdir 
