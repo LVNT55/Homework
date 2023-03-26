@@ -1,0 +1,23 @@
+---
+- name: Mount file system with UUID
+  hosts: all
+  become: true
+  
+  vars:
+    mount_point: "/mnt/drive"
+    device_uuid: ""
+    
+    tasks:
+    - name: Create mount point
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        
+    - name: Get device path from UUID
+      shell: blkid -U {{ device_uuid }}
+      register: blkid_output
+      
+    - name: Mount file system
+    mount:
+      path: "{{ mount_point }}"
+      state: mounted

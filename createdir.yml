@@ -1,0 +1,19 @@
+---
+- name: Create directory with owner and permissions
+  hosts: all
+  become: true
+  
+  vars:
+    directory_path: "/data/mydir"
+    directory_owner: "myuser"
+    directory_group: "mygroup"
+    directory_mode: "0770"
+    
+  tasks:
+  - name: Create directory
+    file:
+      path: "{{ directory_path }}"
+      state: directory
+      mode: "{{ directory_mode }}"
+      owner: "{{ directory_owner }}"
+      group: "{{ directory_group }}"
