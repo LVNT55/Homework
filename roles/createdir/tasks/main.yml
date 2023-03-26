@@ -1,0 +1,8 @@
+---
+  - name: Create directory
+    file:
+      path: "{{ directory_path }}"
+      state: directory
+      mode: "{{ directory_mode }}"
+      owner: "{{ directory_owner }}"
+      group: "{{ directory_group }}"
