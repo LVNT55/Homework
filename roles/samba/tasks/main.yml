@@ -1,33 +1,21 @@
----
-- name: Create Samba Writable Directory
-  hosts: all
-  become: true
-  
-  vars:
-    samba_share_name: "myshare"
-    samba_share_path: "/data/fontos"
-    samba_share_guest_ok: "yes"
-    samba_share_writable: "yes"
-    variable: "[WORKGROUP]"
-    
-  tasks:
+--- 
   - name: Install samba
     yum:
       name: samba
       state: present
-      
+
   - name: Create Samba Share Directory
     file:
       path: "{{ samba_share_path }}"
       state: directory
       mode: '0777'
-      
+
   - name: Workgroup Insert
     lineinfile:
       path: /etc/samba/smb.conf
       line: "{{ variable }}"
       state: present
-      
+
   - name: Configure Samba Share
     lineinfile:
       path: /etc/samba/smb.conf
@@ -45,12 +33,15 @@
       - "valid users = 'fonok'"
       - "path = {{ samba_share_path }}"
       - "name = {{ samba_share_name }}"
+    when: file_changed
+    notify:
+      - restart_service
 
   - name: Create Samba Group
     group:
       name: smbgroup
       state: present
-      
+
   - name: Add user to Samba Group
     user:
       name: fonok

@@ -1,0 +1,5 @@
+---
+  - name: Create mount point
+    file:
+      path: "{{ mount_point }}"
+      state: directory

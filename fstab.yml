@@ -22,9 +22,12 @@
       register: blkid_output
       
     - name: Mount file system
-    mount:
-      path: "{{ mount_point }}"
-      state: mounted
+      mount:
+        path: "{{ mount_point }}"
+        state: mounted
+    
+    notify:
+     - restart_service
       
     roles:
       - createdir 

@@ -1,0 +1,93 @@
+---
+  - name: Valami
+    hosts: all
+    become: true
+    vars:
+      mount_point: "/mnt/drive"
+      device_uuid: ""
+      directory_path: "/data/mydir"
+      directory_owner: "myuser"
+      directory_group: "mygroup"
+      directory_mode: "0770"
+      samba_share_name: "myshare"
+      samba_share_path: "/data/fontos"
+      samba_share_guest_ok: "yes"
+      samba_share_writable: "yes"
+      variable: "[WORKGROUP]"
+
+    
+    tasks:
+    - name: Create mount point
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+    
+    - name: Install samba
+      yum:
+        name: samba
+        state: present
+
+    - name: Create Samba Share Directory
+      file:
+        path: "{{ samba_share_path }}"
+        state: directory
+        mode: '0777'
+        
+    - name: Workgroup Insert
+      lineinfile:
+        path: /etc/samba/smb.conf
+        line: "{{ variable }}"
+        state: present
+        
+    - name: Configure Samba Share
+      lineinfile:
+        path: /etc/samba/smb.conf
+        line: "{{ item }}"
+        create: yes
+        insertafter: '[WORKGROUP]'
+      with_items:
+        - "security = user"
+        - "guest ok = {{ samba_share_guest_ok }}"
+        - "writable = {{ samba_share_writable }}"
+        - "create mask = 0660"
+        - "directory mask = 0771"
+        - "force user = nobody"
+        - "force group = nogroup"
+        - "valid users = 'fonok'"
+        - "path = {{ samba_share_path }}"
+        - "name = {{ samba_share_name }}"
+      notify: restart smb
+    
+    - name: Create Samba Group
+      group:
+        name: smbgroup
+        state: present
+        
+    - name: Add user to Samba Group
+      user:
+        name: fonok
+        groups: smbgroup
+        append: yes
+    
+    - name: Create Directory
+      file:
+        path: "{{ directory_path }}"
+        state: directory
+        mode: "{{ directory_mode }}"
+        owner: "{{ directory_owner }}"
+        group: "{{ directory_group }}"
+      register: dir_created
+      
+    - name: Trigger handler if directory was created
+      meta: refresh_inventory
+      notify: handler
+      when: dir_created.changed
+    
+    roles:
+      - fcontext
+      
+    handlers:
+     - name: restart smb
+       service:
+         name: smb.service
+         state: restarted
